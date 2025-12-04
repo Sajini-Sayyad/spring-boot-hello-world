@@ -1,14 +1,35 @@
-# Step 1: Use lightweight Java image
-FROM openjdk:17-jdk-slim
+# ============================
+# Stage 1: Build the project
+# ============================
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Step 2: Set working directory inside container
+# Set working directory
 WORKDIR /app
 
-# Step 3: Copy the jar file from your machine to the container
-COPY target/spring-boot-hello-world.jar app.jar
+# Copy pom.xml and download dependencies (cached layer)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Step 4: Expose port (Spring Boot default)
+# Copy source code
+COPY src ./src
+
+# Build jar file
+RUN mvn clean package -DskipTests
+
+
+# ============================
+# Stage 2: Run the application
+# ============================
+FROM openjdk:17-jdk-slim
+
+# Working directory inside container
+WORKDIR /app
+
+# Copy jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose Spring Boot default port
 EXPOSE 8080
 
-# Step 5: Run the application
+# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
