@@ -1,7 +1,7 @@
 # ============================
 # Stage 1: Build the project
 # ============================
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 # Set working directory
 WORKDIR /app
@@ -20,7 +20,7 @@ RUN mvn clean package -DskipTests
 # ============================
 # Stage 2: Run the application
 # ============================
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jre
 
 # Working directory inside container
 WORKDIR /app
@@ -33,3 +33,5 @@ EXPOSE 8080
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
